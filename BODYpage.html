@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Deep Dive — Brain Bites</title>
+  <link rel="icon" type="image/x-icon" href="Images/BrainBitesLogo.png">
+<style>
+    :root {
+      --bg: #f6f1ea;
+      --ink: #4b2953;
+      --accent: #ff9b96;
+      --accent-soft: #ffe4e2;
+      --card: #ffffff;
+      --border: #4b2953;
+      --shadow: rgba(75, 41, 83, 0.15);
+      --star-pattern: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" fill="rgba(240, 139, 134,0.12)" font-size="20"><text x="10" y="30">✦</text><text x="60" y="70">✧</text><text x="30" y="110">✦</text></svg>');
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; min-height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background:
+        linear-gradient(
+          rgba(246,241,234,0.5),
+          rgba(246,241,234,0.5)
+        ),
+        url('background.png') center / cover no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: var(--ink);
+      line-height: 1.6;
+      padding-top: 120px; 
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(246, 241, 234, 0); 
+      backdrop-filter: blur(5px); 
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px dashed rgba(75, 41, 83, 0.15);
+      padding: 15px 0;
+      z-index: 1000;
+      transition: background 0.3s ease;
+    }
+
+    .header-scrolled {
+      background: rgba(246, 241, 234, 0.4);
+    }
+
+    .header-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+    .logo img { width: 60px; height: auto; }
+    .site-title { font-size: clamp(18px, 3vw, 24px); margin: 0; font-weight: 800; letter-spacing: 0.6px; }
+    .site-sub { margin: 0; font-size: 12px; color: var(--ink); opacity: 0.8; }
+
+    .nav-tags { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+    .tag {
+      display: inline-block; padding: 6px 14px; border-radius: 999px; 
+      background: rgba(75, 41, 83, 0.1); font-weight: 700; font-size: 11px;
+      text-decoration: none; color: inherit; transition: 0.2s;
+      text-transform: uppercase;
+      border: 1px solid rgba(75, 41, 83, 0.1);
+    }
+    .tag:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .hero {
+      display: grid; grid-template-columns: 1.2fr 0.8fr;
+      border: 3px solid var(--ink);
+      background: var(--card);
+      margin-bottom: 60px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 10px 10px 0px rgba(75, 41, 83, 0.1);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .hero-text { padding: 50px; background: var(--star-pattern) repeat; background-size: 120px; }
+    .hero-text h1 { margin: 0 0 15px; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -2px; }
+
+    .hero-img {
+      background: url('https://images.unsplash.com/photo-1539814858141-928517f6afd3?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800') center/cover;
+      position: relative;
+    }
+    .hero-img::before {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to right, var(--card) 0%, transparent 40%);
+    }
+
+    .fact-grid { display: flex; flex-direction: column; gap: 30px; }
+    .fact-card {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--card); border: 3px solid var(--ink);
+      border-radius: 20px; overflow: hidden;
+      transition: 0.3s ease;
+    }
+    .fact-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px var(--shadow); }
+
+    .fact-info { padding: 40px; border-right: 3px solid var(--ink); }
+    .fact-info h2 { font-size: 22px; margin-top: 0; margin-bottom: 15px; }
+    .highlight { background: linear-gradient(transparent 60%, var(--accent-soft) 40%); }
+
+    .fact-visual { overflow: hidden; }
+    .fact-visual img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
+    .fact-card:hover .fact-visual img { transform: scale(1.08); }
+
+    .footer { margin: 60px 0; text-align: center; }
+    .btn-back {
+      padding: 15px 35px; border: 2px solid var(--ink);
+      background: #fff; color: var(--ink);
+      text-decoration: none; font-weight: 800; border-radius: 50px;
+      transition: 0.2s; display: inline-block;
+    }
+    .btn-back:hover { background: var(--ink); color: #fff; }
+
+    @media (max-width: 850px) {
+      .hero, .fact-card { grid-template-columns: 1fr; }
+      .fact-info { border-right: none; border-bottom: 3px solid var(--ink); }
+      .hero-img { height: 200px; }
+      .hero-img::before { background: linear-gradient(to bottom, var(--card) 0%, transparent 40%); }
+    }
+
+    }
+    
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fact-card {
+      view-timeline-name: --item;
+      view-timeline-axis: block;
+      animation: reveal linear both;
+      animation-timeline: --item;
+      animation-range: entry 5% cover 30%;
+    }
+
+    @media (min-width: 851px) {
+      .fact-card:nth-child(even) {
+        grid-template-columns: 1fr 1fr;
+      }
+      .fact-card:nth-child(even) .fact-info {
+        order: 2;
+        border-right: none;
+        border-left: 3px solid var(--ink);
+      }
+      .fact-card:nth-child(even) .fact-visual {
+        order: 1;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="blob-bg"></div>
+  <div id="scroll-progress"></div>
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">
+        <img src="Images/BrainBitesLogo.png" alt="Brain Bites Logo">
+        <div>
+          <h1 class="site-title">Brain Bites</h1>
+          <p class="site-sub">Brain food that isn’t dry and crusty.</p>
+        </div>
+      </a>
+      <nav class="nav-tags">
+        <a class="tag" href="animals.html">Animals</a>
+        <a class="tag" href="science.html">Science</a>
+        <a class="tag" href="brain.html">Brain</a>
+        <a class="tag" href="random.html">Random</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <main>
+      <section class="hero">
+        <div class="hero-text">
+          <h1>HUMAN BODY &<br>ANATOMY</h1>
+          <p>Step inside the biological masterpiece of the human body, a self-healing system of stardust-forged architecture. These facts reveal the hidden miracles and strange evolutionary quirks that keep your complex anatomy in perfect balance.</p>
+        </div>
+        <div class="hero-img"></div>
+      </section>
+
+
+      <div class="fact-grid">
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Brain Is a 20-Watt Light Bulb</span></h2>
+            <p>Despite its massive processing power, your brain runs on about 12 to 20 watts of electricity. This is just enough to power a dim LED bulb in your refrigerator.</p>
+            <p>It is arguably the most energy-efficient processor in the known universe. Evolution has optimized our neural pathways to perform trillions of operations while consuming less power than a laptop.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722622864763-f8024fd9b89d?q=80&w=900&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Astronaut">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Eye’s Resolution is 576 Megapixels</span></h2>
+            <p>If the human eye were a digital camera, it would have a resolution of roughly 576 megapixels. However, we only see in high resolution in a tiny central area called the fovea.</p>
+            <p>Your brain "stitches" together multiple quick glances (saccades) to create the illusion of a seamless, high-definition panoramic view. This processing is so fast we never notice the "low-res" edges of our vision.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1617339860632-f53c5b5dce4d?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Nerve Impulses Travel at Racing Speeds</span></h2>
+            <p>Information travels along your nerves at speeds of up to 250 miles per hour (400 km/h). This high speed is necessary for survival, allowing you to react to a hot stove or a sudden movement in milliseconds.</p>
+            <p>These signals are sent via electrical "action potentials" jumping across gaps in the nerve's insulation (the myelin sheath). Without this speed, our movements would be sluggish and uncoordinated.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1681487555001-a91ab40e6e87?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Brain Can’t Feel Pain</span></h2>
+            <p>The brain itself does not have pain receptors (nociceptors), even though it is the organ that interprets pain signals for the rest of the body.</p>
+            <p>This is why surgeons can perform brain surgery while a patient is awake and talking. The pain felt during a headache actually comes from the meninges (the brain's protective layers), blood vessels, or scalp muscles. It is the ultimate irony: the source of all sensation is itself sensationless.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1559757175-5700dde675bc?q=80&w=1031&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Nose Can Remember 50,000 Scents</span></h2>
+            <p>The human nose has roughly 400 types of scent receptors that can distinguish at least 50,000 different odors. Some recent studies even suggest we might be able to detect up to a trillion distinct smells.</p>
+            <p>Because the olfactory bulb is directly connected to the amygdala and hippocampus, smells are more closely linked to memories and emotions than any other sense. This is why a specific perfume can instantly transport you back to childhood.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722887770399-88cd2819cc30?q=80&w=1349&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Babies Have More Bones Than Adults</span></h2>
+            <p>Human infants are born with approximately 270 bones, but by the time they reach adulthood, they only have 206. As a baby grows, many of these bones—especially in the skull and spine—fuse together to create a stronger, more stable framework.</p>
+            <p>This initial flexibility is crucial for passing through the birth canal and allowing for rapid growth spurts. By your 20s, your skeletal "merger" is complete</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1676049342406-20d6e89dc79c?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Bone is Stronger Than Steel</span></h2>
+            <p>Ounce for ounce, human bone is stronger than steel. A block of bone the size of a matchbox can support up to 9 tons of weight—about four times what concrete can handle.</p>
+            <p>This incredible strength comes from a composite structure of flexible collagen fibers and hard calcium minerals. This allows our skeleton to be lightweight enough for movement but strong enough to withstand massive impacts.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Smallest Bone is in Your Ear</span></h2>
+            <p>The stapes (or stirrup) bone, located in the middle ear, is the smallest bone in the human body. It is roughly 2.8 millimeters long—smaller than a grain of rice.</p>
+            <p>Its job is to vibrate and transmit sound waves from the eardrum to the inner ear. If this tiny bone is damaged, it can lead to significant hearing loss, showing how much we rely on microscopic engineering.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1582380626754-bcf3185f1832?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Muscles Only Pull, They Never Push</span></h2>
+            <p>Every movement you make, from blinking to jumping, is the result of muscles contracting (pulling). Muscles are incapable of "pushing" an object away; instead, they work in antagonistic pairs.</p>
+            <p>For example, your bicep pulls your arm up, and your tricep pulls it back down. This "tug-of-war" system is the basis for all vertebrate movement.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722810760531-b2bffca4425d?q=80&w=1349&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Masseter is the Strongest Muscle</span></h2>
+            <p>Based on its weight, the masseter (the primary jaw muscle) is the strongest muscle in the human body. When you bite down, your jaw can exert a force of up to 200 pounds (90 kg) on the molars.</p>
+            <p>This power is necessary for breaking down a wide variety of tough foods. It is a biological vice that can exert pressure far beyond its physical size.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1723125592079-ac0923cb92ad?q=80&w=812&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Veins Could Wrap Around Earth Twice</span></h2>
+            <p>If you took all the blood vessels (arteries, veins, and capillaries) from an adult human and laid them end-to-end, they would stretch about 60,000 to 100,000 miles. That is long enough to circle the Earth more than twice.</p>
+            <p>Most of this length comes from capillaries, the tiniest vessels that deliver oxygen to every single cell. It is an incredibly dense and efficient distribution network.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1650689916167-2d95ef71a529?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Heart Pumps Enough Blood to Fill a Pool</span></h2>
+            <p>An average heart pumps about 2,000 gallons (7,500 liters) of blood every single day. Over a lifetime of 75 years, it will pump about 1.5 million barrels of blood—enough to fill three supertankers or a massive stadium pool.</p>
+            <p>This muscle never rests, beating roughly 100,000 times a day without you ever having to think about it. It is the most reliable pump ever designed.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722707492894-2839a324624e?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Stomach Lining is Replaced Every 3 Days</span></h2>
+            <p>The hydrochloric acid in your stomach is strong enough to dissolve metal (even a razor blade). To prevent the stomach from digesting itself, the body creates a new layer of mucus and surface cells every 3 to 4 days.</p>
+            <p>If this process fails, an ulcer develops as the acid begins to eat through the tissue. You are effectively walking around with a vat of acid that is constantly trying to escape.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722658473477-0c8ab1b79acf?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Astronaut">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Liver is the Body’s Only Regenerative Organ</span></h2>
+            <p>The liver is the only organ in the human body that can completely regenerate itself. You can donate up to 65% of your liver, and it will grow back to its full size in just a few months.</p>
+            <p>This incredible ability evolved because the liver is the body's primary detoxifier and is often exposed to harmful substances. As long as at least 25% of the tissue is healthy, it can rebuild the entire organ.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1744264418038-19cf0cf6bb54?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Human Lungs Have the Surface Area of a Tennis Court</span></h2>
+            <p>The lungs are filled with about 300 million tiny air sacs called alveoli. If you were to flatten out these sacs, they would cover an area of about 750 square feet, roughly the size of a professional tennis court.</p>
+            <p>This massive surface area is necessary to absorb enough oxygen to fuel your trillion-cell body. Every breath you take utilizes this expansive, delicate "forest" of tissue.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1743767587847-08c42b31cdec?q=80&w=1055&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">You Shed 40 Pounds of Skin in a Lifetime</span></h2>
+            <p>Humans shed about 30,000 to 40,000 dead skin cells every single minute. Over the course of a year, you lose about 8 to 9 pounds of skin, and over a lifetime, that adds up to nearly 40 pounds.</p>
+            <p>Much of the dust in your home is actually made of dead human skin cells. Your skin is your largest organ, and it is constantly in a state of total renewal.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1679046949484-b8a89703a7a6?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Fingerprints Are Created by Fluid Pressure</span></h2>
+            <p>Fingerprints are not determined by DNA alone; they are formed by the pressure of amniotic fluid while a baby is in the womb.</p>
+            <p>This is why identical twins, who share the same DNA, have completely different fingerprints. They are finalized by the 17th week of pregnancy and remain unchanged for life. They are a permanent record of your specific environment before you were even born.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1611330500121-d9439ddc3d9d?q=80&w=876&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Hair Can "Taste"</span></h2>
+            <p>Recent research has found that the hair follicles in your lungs and nose contain the same "bitter" taste receptors found on your tongue.</p>
+            <p>When these receptors detect something bitter or toxic, they trigger the hair-like cilia to move faster to clear the air. It is a hidden defense mechanism that uses the chemistry of taste to protect your respiratory system. Your body is "tasting" the air you breathe before it ever reaches your lungs.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1564141696939-9eb6e957ccfc?q=80&w=941&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Every Person Has a Unique Tongue Print</span></h2>
+            <p>Just like your fingers, your tongue has a unique pattern of bumps and ridges that is different for every person. This "tongue print" could theoretically be used as a biometric identifier.</p>
+            <p>Because the tongue is protected inside the mouth, it is difficult to forge or alter. While it hasn't caught on like fingerprinting, it remains a distinct anatomical signature.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1681829276654-55db2fb29a7d?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">There Are More Bacteria in You Than Human Cells</span></h2>
+            <p>The human body is home to trillions of microbes, collectively known as the microbiome. For every human cell in your body, there is roughly one bacterial cell living on or inside you (some older estimates suggested a 10:1 ratio).</p>
+            <p>These bacteria are vital for digestion, immunity, and even mental health. You are essentially a walking ecosystem, and without your "bacterial passengers," you couldn't survive.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1676325102866-43a380c00b0e?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">White Blood Cells are "Cellular Assassins"</span></h2>
+            <p>Your immune system’s white blood cells, particularly T-cells, act like independent hunters inside your body. They can move through tissue, identify "foreign" invaders like viruses or cancer cells, and physically latch onto them to deliver a lethal chemical blow.</p>
+            <p>They are effectively an internal police force with a "license to kill" anything that threatens your health. You have millions of these microscopic battles happening inside you right now.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1671827108313-eaffae392085?q=80&w=928&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Body Produces 25 Million New Cells Every Second</span></h2>
+            <p>In the time it took you to read this sentence, your body produced about 50 million new cells. It is constantly replacing worn-out tissue in the blood, skin, and gut.</p>
+            <p>This means that every few years, you are physically a completely different person than you were before. The "Self" is a persistent pattern of energy and information, even as the "bricks" are constantly replaced.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1552084162-ec07b3f162dc?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Red Blood Cells Travel the Body in 60 Seconds</span></h2>
+            <p>A single red blood cell can complete a full circuit of your entire circulatory system in about one minute.</p>
+            <p>In its four-month lifespan, it will make about 250,000 trips through the body. Its primary cargo is hemoglobin, which acts like a magnetic "bucket" for oxygen molecules. It is a tireless delivery driver that powers your every thought and action.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1638271522560-a247d127deb8?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Blinking is a "Mental Reset"</span></h2>
+            <p>The average person blinks about 15,000 to 20,000 times a day. While we think of it as just lubricating the eyes, researchers found that the brain uses the split-second of darkness as a "micro-nap" to reset attention.</p>
+            <p>During a blink, brain activity in the "default mode network" spikes, allowing you to refocus. It’s a literal biological "refresh" button for your consciousness.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1519334066009-dc443acc1f65?q=80&w=1034&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Body has Enough Iron for a Nail</span></h2>
+            <p>The average human body contains about 4 grams of iron, most of it in your blood. If you were to extract all of it, you would have enough to forge a small iron nail about 3 inches long.</p>
+            <p>This iron is what allows your blood to bind to oxygen and gives it its red color. Without this small amount of metal, life as we know it would be impossible.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1677612031010-5424f4ea90ff?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">You Can’t Tickle Yourself</span></h2>
+            <p>The cerebellum, the part of the brain that monitors movement, can predict your own touch. Because it knows you are about to touch yourself, it discards the sensation as "unimportant," which prevents the tickle response.</p>
+            <p>Laughter from being tickled by someone else is actually a panic response related to the "fight or flight" system. It is your brain’s way of saying, "I don't know what this sensation is, but I'm reacting!"</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1489278353717-f64c6ee8a4d2?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The "Tailbone" is a Vestigial Tail</span></h2>
+            <p>At the base of your spine is the coccyx, a small triangular bone that is a remnant of our ancestors' tails. During the 4th week of human embryonic development, every human grows a tail that is about 1/6th the size of the embryo.</p>
+            <p>Usually, the tail is absorbed back into the body, leaving only the coccyx. This bone now serves as an anchor point for various pelvic muscles.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722867781597-b48b43af91f5?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Saliva Could Fill Two Bathtubs</span></h2>
+            <p>In an average lifetime, a human produces about 25,000 quarts (23,000 liters) of saliva. This is enough to fill two standard-sized swimming pools.</p>
+            <p>Saliva is essential for beginning the digestive process and protecting your teeth from bacteria. It also contains "opiorphin," a natural painkiller that is actually stronger than morphine.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1651065206701-52cc07813da3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Fat is Burned Off as Carbon Dioxide</span></h2>
+            <p>When you "lose weight," the fat doesn't just turn into energy or heat; you actually breathe it out. </p>
+            <p>Through a metabolic process, fat is converted into water and carbon dioxide. About 84% of lost fat is exhaled through the lungs, while the remaining 16% is excreted as water (sweat or urine). Essentially, your lungs are your primary weight-loss organ.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1634463278803-f9f71890e67d?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Human Body Contains Trace Gold</span></h2>
+            <p>Every human body contains about 0.2 milligrams of gold, most of which is dissolved in our blood.</p>
+            <p>While it sounds glamorous, it is far too small an amount to be worth anything. There is no known biological function for gold in humans; it is simply absorbed from the environment and food. You are, quite literally, a treasure chest of elements.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1754759085353-d4ef2feb53c5?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">You Are Mostly Made of Space</span></h2>
+            <p>Like all matter, the atoms that make up your body are 99.99999% empty space. If you were to remove all the empty space from the atoms of every person on Earth, the entire human race would fit inside the volume of a single sugar cube.</p>
+            <p>However, that sugar cube would be incredibly heavy, weighing about 5 billion tons. We are "mostly nothing" held together by electrical forces.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1530213786676-41ad9f7736f6?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Tears Have Different Chemistries</span></h2>
+            <p>Tears of joy, tears of grief, and tears from chopping an onion look completely different under a microscope. "Psychic tears" (triggered by emotion) contain higher levels of stress hormones and natural painkillers.</p>
+            <p>Your body uses crying as a physical "release valve" to flush out chemicals that build up during emotional stress. This is why you often feel "lighter" after a good cry.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1665203408934-a0ef2337a4b2?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">You Have a "Second Brain" in Your Gut</span></h2>
+            <p>The Enteric Nervous System (ENS) is a mesh-like network of 100 million neurons lining your gastrointestinal tract.</p>
+            <p>It is so complex that it can operate independently of the brain in your head. It communicates with your brain via the vagus nerve, influencing your mood and decision-making. This is the biological reality behind "gut feelings."</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1649073586428-e288125d930a?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Humans are the Only Animals with Chins</span></h2>
+            <p>Despite sharing 99% of our DNA with chimpanzees, we are the only species on Earth with a true "chin" (a bony protrusion on the lower jaw).</p>
+            <p>Scientists still aren't entirely sure why we have them. Some think it helps the jaw withstand the stress of chewing, while others believe it is a result of our faces shrinking as we evolved speech. It remains one of the great mysteries of human anatomy.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1523322781053-47109fa9409f?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Pinky Provides 50% of Your Hand Strength</span></h2>
+            <p>"While the thumb and index finger are more famous, the pinky finger is actually the "powerhouse" of the hand.</p>
+            <p>Without your pinky, you would lose approximately 50% of your overall grip strength. It works in tandem with the ring finger to provide the stability needed for heavy lifting and powerful grasping. The thumb provides the precision, but the pinky provides the force.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1745177301102-486651e0e618?q=80&w=869&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Humans Are the Best Long-Distance Runners</span></h2>
+            <p>While a cheetah is faster, humans are the ultimate endurance athletes of the animal kingdom. Because we can sweat to cool down and run on two legs (which is more energy-efficient), we can outrun almost any animal over a marathon distance.</p>
+            <p>Ancient humans used "persistence hunting" to literally walk prey to death by exhaustion. We are built to keep going when everyone else has to stop.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1725905517906-3cc812125b2c?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Goosebumps Are a Biological Fossil</span></h2>
+            <p>When you get goosebumps, tiny muscles called arrector pili pull your hair upright. For our furry ancestors, this served two purposes: it made them look bigger to predators and trapped air to keep them warm.</p>
+            <p>Since humans have lost most of their body hair, the reaction is now useless. It is an evolutionary "leftover" that still triggers when we are cold or hear a beautiful song.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://i.pinimg.com/736x/7f/1f/94/7f1f943dac1edd677398f3e1d6f0fc6f.jpg?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Body Temperature is Dropping</span></h2>
+            <p>For over a century, 98.6°F (37°C) was considered the "normal" human body temperature. However, recent studies show that the average human temperature has been steadily dropping by about 0.03°C per decade.</p>
+            <p>Today, the average is closer to 97.9°F. Scientists believe this is due to better healthcare and lower levels of chronic inflammation in the modern world.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1580917922805-f8f57e08c0ae?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">You Have a "Third Eye" (Sort Of)</span></h2>
+            <p>The pineal gland, located deep in the center of the brain, was once thought to be a vestigial third eye. In some reptiles, it actually has a lens and retina.</p>
+            <p>In humans, it has evolved to regulate our sleep-wake cycles by producing melatonin. It still reacts to light signals sent from your actual eyes, acting as the body's internal clock.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://i.pinimg.com/736x/3c/69/4d/3c694d71891ddcd187ff7f85c3eacdee.jpg?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Sneeze Air Travels at 100 MPH</span></h2>
+            <p>A single sneeze can propel air and thousands of droplets out of your nose at speeds exceeding 100 miles per hour.</p>
+            <p>This high-pressure blast is the body's way of clearing out irritants or pathogens. It can travel across a room in seconds, which is why covering your mouth is so effective. It is one of the most violent and efficient cleaning cycles in nature.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1661770151480-f178c952b250?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Body is a 13.8 Billion-Year-Old Artifact</span></h2>
+            <p>Nearly every atom in your body was forged in the heart of a dying star or during the Big Bang. You have atoms in you that were once part of ancient trees, dinosaurs, and distant galaxies.</p>
+            <p>You are not just in the universe; you are a piece of the universe that has woken up and started thinking about itself. As Carl Sagan said, "We are made of starstuff."</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1499209974431-9dddcece7f88?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Brain Surgery was Practiced in the Stone Age</span></h2>
+            <p>Archaeologists have found skulls dating back 7,000 years that show evidence of "trepanation"—the practice of drilling holes in the skull to treat headaches or spirits.</p>
+            <p>Surprisingly, many of these skulls show signs of healing, meaning the patients survived the procedure without modern anesthesia or antibiotics. It is the oldest known form of surgical intervention.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1579154491781-5e199df316aa?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Blood Type Affects Your "Internal Forest"</span></h2>
+            <p>Your blood type isn't just a label for transfusions; it actually determines which types of bacteria can thrive in your gut. Certain microbes have evolved to "feed" on the specific sugars (antigens) that cover the lining of your intestines based on your blood type (A, B, AB, or O).</p>
+            <p>This means your DNA creates a unique environment that dictates which "bacterial guests" are allowed to stay. It is the ultimate example of how our genetics and our microbiome are mathematically and biologically linked.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1624968683033-c31c672453e2?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The "Dive Reflex" Can Stop Time</span></h2>
+            <p>Humans have a "Master Switch for Life" called the Mammalian Dive Reflex. When your face is submerged in cold water (specifically under 70°F or 21°C), your heart rate instantly slows by up to 25%, and blood is diverted from your limbs to your brain and heart.</p>
+            <p>This ancient survival mechanism allows humans to stay underwater far longer than they could otherwise. It is a biological "emergency mode" that shifts your metabolism into a high-efficiency state to prevent drowning.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1661553008975-40cc0aa64b95?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Your Lungs Can Float on Water</span></h2>
+            <p>The human lungs are the only organs in the body that are buoyant enough to float. This is because they contain over 300 million tiny, air-filled sacs called alveoli that remain partially inflated even after you exhale completely.</p>
+            <p>Forensic pathologists actually use this "float test" to determine if a baby was born alive or stillborn. It is a striking reminder of how much of our internal structure is dedicated to capturing and holding onto the air around us.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722557027422-11e26ba34d4b?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+    <div class="footer">
+
+      <a href="index.html" class="btn-back">← BACK TO HOME</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Deep Dive — Brain Bites</title>
+  <link rel="icon" type="image/x-icon" href="Images/BrainBitesLogo.png">
+<style>
+    :root {
+      --bg: #f6f1ea;
+      --ink: #4b2953;
+      --accent: #ff9b96;
+      --accent-soft: #ffe4e2;
+      --card: #ffffff;
+      --border: #4b2953;
+      --shadow: rgba(75, 41, 83, 0.15);
+      --star-pattern: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" fill="rgba(240, 139, 134,0.12)" font-size="20"><text x="10" y="30">✦</text><text x="60" y="70">✧</text><text x="30" y="110">✦</text></svg>');
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; min-height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background:
+        linear-gradient(
+          rgba(246,241,234,0.5),
+          rgba(246,241,234,0.5)
+        ),
+        url('background.png') center / cover no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: var(--ink);
+      line-height: 1.6;
+      padding-top: 120px; 
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(246, 241, 234, 0); 
+      backdrop-filter: blur(5px); 
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px dashed rgba(75, 41, 83, 0.15);
+      padding: 15px 0;
+      z-index: 1000;
+      transition: background 0.3s ease;
+    }
+
+    .header-scrolled {
+      background: rgba(246, 241, 234, 0.4);
+    }
+
+    .header-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+    .logo img { width: 60px; height: auto; }
+    .site-title { font-size: clamp(18px, 3vw, 24px); margin: 0; font-weight: 800; letter-spacing: 0.6px; }
+    .site-sub { margin: 0; font-size: 12px; color: var(--ink); opacity: 0.8; }
+
+    .nav-tags { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+    .tag {
+      display: inline-block; padding: 6px 14px; border-radius: 999px; 
+      background: rgba(75, 41, 83, 0.1); font-weight: 700; font-size: 11px;
+      text-decoration: none; color: inherit; transition: 0.2s;
+      text-transform: uppercase;
+      border: 1px solid rgba(75, 41, 83, 0.1);
+    }
+    .tag:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .hero {
+      display: grid; grid-template-columns: 1.2fr 0.8fr;
+      border: 3px solid var(--ink);
+      background: var(--card);
+      margin-bottom: 60px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 10px 10px 0px rgba(75, 41, 83, 0.1);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .hero-text { padding: 50px; background: var(--star-pattern) repeat; background-size: 120px; }
+    .hero-text h1 { margin: 0 0 15px; font-size: clamp(32px, 5vw, 52px); line-height: 1; letter-spacing: -2px; }
+
+    .hero-img {
+      background: url('https://images.unsplash.com/photo-1539814858141-928517f6afd3?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800') center/cover;
+      position: relative;
+    }
+    .hero-img::before {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to right, var(--card) 0%, transparent 40%);
+    }
+
+    .fact-grid { display: flex; flex-direction: column; gap: 30px; }
+    .fact-card {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--card); border: 3px solid var(--ink);
+      border-radius: 20px; overflow: hidden;
+      transition: 0.3s ease;
+    }
+    .fact-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px var(--shadow); }
+
+    .fact-info { padding: 40px; border-right: 3px solid var(--ink); }
+    .fact-info h2 { font-size: 22px; margin-top: 0; margin-bottom: 15px; }
+    .highlight { background: linear-gradient(transparent 60%, var(--accent-soft) 40%); }
+
+    .fact-visual { overflow: hidden; }
+    .fact-visual img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
+    .fact-card:hover .fact-visual img { transform: scale(1.08); }
+
+    .footer { margin: 60px 0; text-align: center; }
+    .btn-back {
+      padding: 15px 35px; border: 2px solid var(--ink);
+      background: #fff; color: var(--ink);
+      text-decoration: none; font-weight: 800; border-radius: 50px;
+      transition: 0.2s; display: inline-block;
+    }
+    .btn-back:hover { background: var(--ink); color: #fff; }
+
+    @media (max-width: 850px) {
+      .hero, .fact-card { grid-template-columns: 1fr; }
+      .fact-info { border-right: none; border-bottom: 3px solid var(--ink); }
+      .hero-img { height: 200px; }
+      .hero-img::before { background: linear-gradient(to bottom, var(--card) 0%, transparent 40%); }
+    }
+
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fact-card {
+      view-timeline-name: --item;
+      view-timeline-axis: block;
+      animation: reveal linear both;
+      animation-timeline: --item;
+      animation-range: entry 5% cover 30%;
+    }
+
+    @media (min-width: 851px) {
+      .fact-card:nth-child(even) {
+        grid-template-columns: 1fr 1fr;
+      }
+      .fact-card:nth-child(even) .fact-info {
+        order: 2;
+        border-right: none;
+        border-left: 3px solid var(--ink);
+      }
+      .fact-card:nth-child(even) .fact-visual {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="index.html">
+        <img src="Images/BrainBitesLogo.png" alt="Brain Bites Logo">
+        <div>
+          <h1 class="site-title">Brain Bites</h1>
+          <p class="site-sub">Brain food that isn’t dry and crusty.</p>
+        </div>
+      </a>
+      <nav class="nav-tags">
+        <a class="tag" href="animals.html">Animals</a>
+        <a class="tag" href="science.html">Science</a>
+        <a class="tag" href="brain.html">Brain</a>
+        <a class="tag" href="random.html">Random</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <main>
+      <section class="hero">
+        <div class="hero-text">
+          <h1>SCIENCE &<br>SPACE</h1>
+          <p>Where logic meets the impossible. Dive into the deep secrets of the universe, from the atoms in your skin to the stars in the furthest galaxies.</p>
+        </div>
+        <div class="hero-img"></div>
+      </section>
+
+      <div class="fact-grid">
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Lemon-Shaped "Soot" Planet</span></h2>
+            <p>Discovered just this month (January 2026) by the James Webb Space Telescope, the exoplanet PSR J2322-2650b is one of the strangest worlds ever found.</p>
+            <p>It orbits a city-sized neutron star so closely that the star's intense gravity has stretched the Jupiter-sized planet into the shape of a lemon. Its atmosphere is filled with thick, dark soot clouds and molecular carbon, leading scientists to believe the planet’s core might be made of solid diamond.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/PSR_J2322-2650b_1.jpg/960px-PSR_J2322-2650b_1.jpg?auto=format&fit=crop&w=800" alt="Astronaut">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Neutron Stars Are Insanely Heavy</span></h2>
+            <p>Neutron stars are born when massive stars explode in giant supernova blasts. What’s left behind is so dense that a piece the size of a sugar cube would weigh billions of tons on Earth.</p>
+            <p>The gravity is so extreme that atoms are crushed together, forcing protons and electrons to merge into neutrons. These stars spin super fast and have gravity so strong they seriously mess with space around them.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1720720425905-d5f6e96c7752?q=80&w=725&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Gravity Can Slow Down Time</span></h2>
+            <p>Time doesn’t move at the same speed everywhere in the universe. Near very heavy objects—like black holes or massive planets—gravity stretches time itself. This effect is called time dilation.</p>
+            <p>Astronauts on the International Space Station actually age a tiny bit slower than people on Earth. It’s a small difference, but it proves that time is not as fixed as we think.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1566345984367-fa2ba5cedc17?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Venus Has the Weirdest Time Ever</span></h2>
+            <p>Venus is the ultimate weird planet. It spins so slowly that one day on Venus is longer than one year there. That means Venus finishes going around the Sun before it finishes one full spin.</p>
+            <p>On top of that, Venus spins backward, so the Sun rises in the west and sets in the east. If you lived on Venus, time would feel totally broken.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1677186163047-377601d6a32b?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Black Holes Aren’t Cosmic Vacuums</span></h2>
+            <p>Despite the name, black holes aren’t giant holes sucking everything in. They’re extremely dense objects with gravity so strong that even light can’t escape once it gets too close.</p>
+            <p>If our Sun were replaced by a black hole of the same mass, Earth wouldn’t suddenly get swallowed, we’d keep orbiting normally. Black holes only trap things that wander too close.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1690571200236-0f9098fc6ca9?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Space Can Be Turned Into Sound</span></h2>
+            <p>Space itself has no air, so sound can’t travel the way it does on Earth. But gas around stars and black holes can vibrate and create pressure waves.</p>
+            <p>Scientists take these vibrations and convert them into sound we can hear. Some of these space sounds are deep, eerie, and almost musical, proof that the universe is way creepier than it looks.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1714618960645-4ab7927bcd87?q=80&w=821&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Ice Giants Rain Diamond</span></h2>
+            <p>Deep inside the "Ice Giant" planets Neptune and Uranus, extreme atmospheric pressure crushes methane gas into solid carbon. These carbon atoms bond together to form actual diamonds that sink through the atmosphere like hailstones.</p>
+            <p>Because these planets have no solid surface, the diamonds eventually melt into a "carbon sea" near the core.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1519692933481-e162a57d6721?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Rasberry Cloud Deep In Space</span></h2>
+            <p>Astronomers studying the center of our Milky Way discovered a massive gas cloud filled with a chemical called ethyl formate. This is the exact same molecule that gives raspberries their flavor and rum its distinct, sweet smell.</p>
+            <p>While space is a vacuum, if you could "smell" the heart of our galaxy, it would be surprisingly fruity. This discovery helps scientists understand how the complex building blocks of life are scattered throughout the universe.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1725986663031-1611a3dcf23a?q=80&w=869&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Alien Sunset In Blue Mars</span></h2>
+            <p>While Earth has blue skies and red sunsets, Mars experiences the exact opposite due to its thin, dusty atmosphere. The fine iron-rich dust on Mars scatters red light during the day, making the sky look pinkish-orange.</p>
+            <p>However, at sunset, the dust filters out the red light and allows the blue wavelengths to pass through more clearly. This creates a haunting, blue-tinted "halo" around the sun as it sinks below the Martian horizon.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://th.bing.com/th/id/R.8c04c5ada499f4f5d87111f2f94deba6?rik=9lt91FNXYSm0Pw&pid=ImgRaw&r=0?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Immortal Jellyfish</span></h2>
+            <p>The Turritopsis dohrnii is a tiny jellyfish capable of resetting its biological clock to zero when it becomes old or damaged. Through a process called transdifferentiation, it transforms its adult cells back into youthful stem cells, effectively restarting its entire life cycle.</p>
+            <p>This means the jellyfish can theoretically live forever, avoiding death from old age indefinitely.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://tse2.mm.bing.net/th/id/OIP.ADis8EuU0msBy18x-WPchwHaEG?rs=1&pid=ImgDetMain&o=7&rm=3?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Indestructible Tardigrade</span></h2>
+            <p>Tardigrades, or "water bears," are microscopic animals that can survive the most extreme environments known to man, including the vacuum of outer space. When faced with danger, they enter a state called "cryptobiosis," drying out into a ball and protecting their DNA with a special glass-like protein</p>
+            <p>In this state, they can survive boiling heat, absolute zero temperatures, and radiation levels that would be fatal to humans.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://wallpapercave.com/wp/wp8796521.jpg?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Universal Speed Limit</span></h2>
+            <p>In our universe, the speed of light (299,792 km/s) acts as a hard limit that nothing with mass can ever reach or exceed. As an object moves faster, its mass effectively increases, requiring infinite energy to reach the actual speed of light.</p>
+            <p>This limit exists because the speed of light is actually the speed of "causality",the maximum speed at which information can travel through space-time.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1509099652299-30938b0aeb63?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Space Isn’t Really Empty</span></h2>
+            <p>When you look up at the night sky, space seems like a huge empty nothing. But that’s actually a lie. Space is filled with tiny particles like gas, dust, radiation, and invisible magnetic fields.</p>
+            <p>Over millions of years, gravity pulls these particles together, slowly forming stars, planets, and entire galaxies. So space isn’t empty at all, it’s more like a very thin cosmic soup.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=800" alt="Astronaut">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Saturn’s Vanishing Rings</span></h2>
+            <p>If you look at Saturn through a telescope in early 2026, you might notice its famous rings look like a thin, blurry line or even disappear entirely.</p>
+            <p>This is because Saturn has reached its "equinox," where its rings are tilted perfectly edge-on toward Earth, making them nearly invisible due to their extreme thinness.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1627556592933-ffe99c1cd9eb?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Sharks are Older than Trees</span></h2>
+            <p>Sharks have been patrolling our oceans for over 400 million years, making them older than the dinosaurs and even trees. While the first primitive trees appeared about 350 million years ago, sharks had already survived multiple mass extinctions.</p>
+            <p>This evolutionary success is due to their incredible ability to adapt to changing ocean chemistry over hundreds of millions of years.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1661882493643-4453c673b6ae?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">You are Mostly Empty Space</span></h2>
+            <p>If you removed all the "empty space" from the atoms that make up every human being on Earth, the entire population would fit inside the size of a single sugar cube. Atoms are 99.99999% empty space, with a tiny nucleus surrounded by distant electrons.</p>
+            <p>Despite this, we feel solid because the electromagnetic fields between those atoms push back against each other.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722018576685-45a415a4ff67?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Radioactive Banana</span></h2>
+            <p>Bananas contain a naturally occurring isotope called Potassium-40, which makes them slightly radioactive.</p>
+            <p>In fact, there is an informal measurement used by scientists called the "Banana Equivalent Dose" to explain low levels of radiation to the public. You would have to eat roughly 10 million bananas in one sitting to die from radiation poisoning, which is physically impossible.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1664304188646-47b168d698aa?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The "Wood Wide Web"</span></h2>
+            <p>Underneath every forest is a complex social network of fungi called Mycorrhizae that connects the roots of different trees together. This "Wood Wide Web" allows trees to communicate with one another, warning neighbors about insect attacks or sharing sugar with a struggling sapling.</p>
+            <p>Older "Mother Trees" use this network to prioritize sending nutrients to their own offspring to ensure the forest's survival.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1638987821953-bbfabab6f859?q=80&w=869&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Star that is a Giant Diamond</span></h2>
+            <p>In 2026, astronomers are continuing to study "Lucy" (officially known as BPM 37093), a white dwarf star that has cooled and crystallized into a diamond.</p>
+            <p>This cosmic gem is about 2,500 miles across and weighs approximately 10 billion trillion trillion carats. It was once a star similar to our Sun, but after running out of fuel, it collapsed and compressed its carbon core into a solid crystal.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://tse2.mm.bing.net/th/id/OIP.gzWueJIB-9ggheN_PZZFCgHaGP?w=512&h=431&rs=1&pid=ImgDetMain&o=7&rm=3?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Great Attractor</span></h2>
+            <p>The Great Attractor is a mysterious region of space located approximately 250 million light-years away. It exerts an immense gravitational pull on the Milky Way and thousands of surrounding galaxies. These galaxies are moving toward it at a speed of about 1.3 million miles per hour.</p>
+            <p>The object itself cannot be directly observed because it lies behind dense cosmic dust within the Zone of Avoidance. Astronomers infer its presence by tracking the unusual motions of galaxies.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://spaceyv.com/wp-content/uploads/2025/02/Great-Attractor-1024x523.webp?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Galactic Cannibalism</span></h2>
+            <p>Galaxies evolve over time by merging with and absorbing smaller galaxies. The Milky Way is currently in the process of consuming several nearby dwarf galaxies. These interactions stretch stars into long streams through gravitational forces.</p>
+            <p>In approximately four billion years, the Milky Way is expected to collide with the Andromeda galaxy.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1669839137069-4166d6ea11f4?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Boötes Void</span></h2>
+            <p>The Boötes Void is one of the largest known empty regions in the universe. It spans roughly 330 million light-years in diameter. Based on surrounding regions, astronomers expected it to contain thousands of galaxies.</p>
+            <p>Instead, only about 60 galaxies have been detected within it. The reason for this extreme emptiness is still unknown. The void challenges assumptions about how matter is distributed in the universe.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://theplanets.org/123/2021/01/Bootes-Void.jpg?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Journey of Sunlight</span></h2>
+            <p>Light emitted from the Sun’s surface takes about eight minutes to reach Earth. However, that same light can take up to 100,000 years to escape from the Sun’s core.</p>
+            <p>Inside the Sun, photons are repeatedly absorbed and re-emitted by dense plasma. This random path dramatically slows their outward journey. Once the light reaches the surface, it travels freely through space. Sunlight reaching Earth is therefore extremely old energy.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1600245892018-3826141b0822?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Gold from Neutron Stars</span></h2>
+            <p>Most of the gold found on Earth was formed during collisions between neutron stars. These rare events generate extreme pressure and heat capable of creating heavy elements.</p>
+            <p>During the collision, newly formed elements are ejected into space. Over time, some of this material became part of meteorites. These meteorites eventually fell to Earth during its early history. Gold is therefore the result of violent cosmic events.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1610375461246-83df859d849d?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Largest Known Structure</span></h2>
+            <p>The Hercules–Corona Borealis Great Wall is the largest known structure in the observable universe. It is a massive filament composed of countless galaxies bound together by gravity.</p>
+            <p>The structure spans billions of light-years in length. Light requires approximately 10 billion years to cross it from end to end. Its size exceeds what some cosmological theories predict.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://starwalk.space/gallery/images/great-wall/1540x866.jpg?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Cold Welding in Space</span></h2>
+            <p>Cold welding is a phenomenon that occurs in the vacuum of space. When two pieces of the same metal touch, their atoms can bond instantly.</p>
+            <p>This happens because there is no air or moisture to prevent atomic contact. The bond formed is permanent and extremely strong. Cold welding poses challenges for spacecraft design. Engineers must use coatings and special materials to prevent accidental bonding.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1633281412052-16b10fee6f94?q=80&w=873&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The "Cellular Elephant"</span></h2>
+            <p>In a playful but incredible feat of nanotechnology, scientists recently used a specialized 3D printer to create a microscopic elephant inside a living human cell.</p>
+            <p>The "behemoth" measures only 10 micrometers—about 1/10th the width of a human hair—and was printed without harming the cell itself. This experiment proves we can now build complex, tiny structures inside living tissue, which could lead to "micro-factories" that manufacture medicine directly inside our bodies.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1664302632801-7f3afb168c2f?q=80&w=873&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Jupiter: Earth’s Protector</span></h2>
+            <p>Jupiter is the largest planet in the solar system and has immense gravitational influence. Its gravity attracts or redirects many asteroids and comets.</p>
+            <p>This reduces the number of potentially dangerous objects reaching Earth. Jupiter has absorbed numerous impacts throughout its history. While it does not block all threats, it significantly lowers impact frequency. Its presence has likely helped stabilize Earth’s environment.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1637984135921-301a7d39e3b7?q=80&w=1015&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Length of Human DNA</span></h2>
+            <p>Each human cell contains approximately two meters of DNA. This DNA is tightly packed into a nucleus only a few micrometers wide.</p>
+            <p>If all the DNA in your body were stretched out, it would reach from Earth to Pluto and back. This length comes from trillions of cells. DNA stores massive amounts of information efficiently. It highlights the complexity of biological systems.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1681487118711-2c8e629d4313?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Earth’s Core Temperature</span></h2>
+            <p>The surface of the Sun is about 5,500 degrees Celsius. Earth’s inner core is estimated to reach temperatures near 6,000 degrees Celsius.</p>
+            <p>Despite this heat, the core remains solid due to immense pressure. The core is composed mainly of iron and nickel. Its heat drives Earth’s magnetic field. This magnetic field protects the planet from harmful solar radiation.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1700173318258-3c0134576743?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Olympus Mons</span></h2>
+            <p>Olympus Mons is the tallest volcano in the solar system. It is located on Mars and rises nearly three times higher than Mount Everest. The volcano spans an area about the size of Arizona. Its enormous size is due to Mars lacking active tectonic plates.</p>
+            <p>Lava repeatedly erupted from the same location for millions of years. This allowed the volcano to grow without limits. Olympus Mons is currently inactive.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://tse4.mm.bing.net/th/id/OIP.rPwrntv6H_8CDHNldyreKQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Moon Dust Effects</span></h2>
+            <p>Moon dust is extremely fine and sharp due to the lack of weathering. It clings easily to surfaces and spacesuits. Apollo astronauts reported that it smelled like burnt gunpowder. When inhaled, it caused sneezing and irritation.</p>
+            <p>Prolonged exposure could be harmful to human health. The dust also damages equipment and seals. Managing lunar dust is a major challenge for future missions. It is one of the Moon’s most dangerous hazards.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1677186162905-53180e8a3472?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Walking on Water</span></h2>
+            <p>Basilisk lizards can run across the surface of water. They move their feet rapidly to slap the water downward. This motion traps air beneath their feet.</p>
+            <p>The trapped air creates temporary lift. The lizard sinks if it slows down. The ability combines speed, balance, and physics. It is a remarkable example of adaptation. Nature often exploits physical laws creatively.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1641893504528-d63d51b81635?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Gravitational Time Dilation</span></h2>
+            <p>Time does not pass at the same rate everywhere. Gravity affects the flow of time. Stronger gravity slows time slightly. Your feet experience stronger gravity than your head.</p>
+            <p>As a result, your head ages marginally faster. The difference is extremely small. Atomic clocks can measure this effect. Time is not absolute.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1501139083538-0139583c060f?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Quantum Tunneling</span></h2>
+            <p>Quantum tunneling allows particles to cross barriers they should not be able to pass. This occurs due to the wave-like nature of particles. It is essential for nuclear fusion in stars.</p>
+            <p>Without tunneling, the Sun could not produce energy. The phenomenon has been experimentally confirmed. It plays a role in modern technology. Quantum mechanics defies classical intuition. Reality behaves strangely at small scales.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://i.pinimg.com/1200x/14/12/e5/1412e56d03f4c24f88fd672b8eafc54d.jpg?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Absolute Zero</span></h2>
+            <p>Absolute zero is defined as −273.15 degrees Celsius. It represents the theoretical lowest possible temperature. At this point, classical motion would stop.</p>
+            <p>Quantum mechanics prevents complete stillness. Objects can approach absolute zero but never reach it. Scientists have cooled matter to fractions above it. Absolute zero remains a physical limit. It defines the boundary of temperature.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1722686484485-97bd7090ba42?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Neutrinos Passing Through You</span></h2>
+            <p>Neutrinos are nearly massless subatomic particles. They interact extremely weakly with matter. Billions pass through your body every second. Most pass through the entire Earth without interaction.</p>
+            <p>They originate from stars and cosmic explosions. Detecting them requires massive underground detectors. Neutrinos carry valuable information about distant events. They are known as ghost particles.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1650648065204-0b8d52b18447?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Quantum Immortality</span></h2>
+            <p>Quantum immortality is a thought experiment related to interpretations of quantum mechanics, especially the many-worlds interpretation. It suggests that when survival depends on a quantum event, an observer would only experience outcomes in which they remain alive.</p>
+            <p>In branches of reality where the observer dies, there is no consciousness to observe that outcome. From a subjective point of view, survival could appear continuous. This does not mean humans are physically immortal. The idea is philosophical and remains untestable.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1508962914676-134849a727f0?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Some infinities are bigger than others</span></h2>
+            <p>Cantor’s Theorem is a fundamental concept in set theory concerning the nature of infinity. It states that the set of all subsets of a given set is always larger than the set itself.</p>
+            <p>This rule applies even to infinite sets. As a result, some infinities are larger than others. The theorem revealed that infinity comes in different sizes. It remains a cornerstone of modern mathematics.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1648543444430-369be2e19bd3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">You Are Taller in the Morning</span></h2>
+            <p>During the day, gravity compresses the cartilage between the bones of your spine. This causes you to gradually become slightly shorter.</p>
+            <p>When you lie down at night, the pressure is released. Your spine expands again while you sleep. By morning, you can be up to two centimeters taller.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1723651503989-7fe975e34766?q=80&w=851&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">We Are Walking Glow Sticks</span></h2>
+            <p>The human body produces a very faint visible glow, known as bioluminescence, caused by chemical reactions in cells. These reactions release energy in the form of photons, which are particles of light.</p>
+            <p>The glow is far too weak for the human eye to detect under normal conditions. Using ultra-sensitive cameras, scientists can capture this faint light emitted by the body. Interestingly, the intensity of the glow fluctuates throughout the day and is strongest in the late afternoon.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1725453067409-ebdf1f5c0180?q=80&w=812&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Moon Is Slowly Moving Away</span></h2>
+            <p>The Moon is gradually drifting away from Earth at about 3.8 centimeters per year. This movement is caused by tidal interactions between the Earth and Moon.</p>
+            <p>As the Moon moves farther away, the length of a day on Earth slowly increases. Billions of years ago, the Moon was much closer and appeared significantly larger in the sky. Scientists track this movement using laser measurements from reflectors left on the Moon’s surface by Apollo missions.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://plus.unsplash.com/premium_photo-1677186162758-ab0c59bb80ce?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Black Holes Can Spin</span></h2>
+            <p>Black holes are regions of space where gravity is so strong that nothing can escape. Many black holes rotate, or spin, around their axis. This spin affects the surrounding space-time, dragging it along in a process called frame-dragging.</p>
+            <p>Spinning black holes can also produce powerful jets of energy and particles. The rate of spin can influence how the black hole grows and interacts with nearby matter.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1670884307458-4977f638a933?q=80&w=928&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">The Ham Sandwich Theorem</span></h2>
+            <p>The Ham Sandwich Theorem states that given three objects in three-dimensional space, like a slice of ham and two pieces of bread, you can always cut all three exactly in half with a single slice.</p>
+            <p>In general, in 𝑛-dimensional space, 𝑛 objects can be simultaneously bisected by a single (𝑛−1)-dimensional cut. The objects can be any shape, no matter how irregular. This theorem has applications in fair division, computer science, and data analysis.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1481070414801-51fd732d7184?q=80&w=724&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+        <article class="fact-card">
+          <div class="fact-info">
+            <h2><span class="highlight">Time Crystals</span></h2>
+            <p>Time crystals are a strange state of matter that repeat in time rather than in space. Unlike ordinary crystals, which have atoms arranged in a repeating pattern, time crystals oscillate endlessly without using energy.</p>
+            <p>They were first created in labs in 2017 and represent a new phase of matter. Time crystals could help advance quantum computing and deepen our understanding of physics. They challenge traditional ideas about energy, motion, and equilibrium.</p>
+          </div>
+          <div class="fact-visual">
+            <img src="https://images.unsplash.com/photo-1512856246663-647a81ef198e?q=80&w=934&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?auto=format&fit=crop&w=800" alt="Space">
+          </div>
+        </article>
+
+    <div class="footer">
+      <a href="index.html" class="btn-back">← BACK TO HOME</a>
+    </div>
+  </div>
+</body>
+</html>

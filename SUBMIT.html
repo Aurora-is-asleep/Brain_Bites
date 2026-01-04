@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="Images/BrainBitesLogo.png">
+  <title>Submit a Bite — Brain Bites</title>
+  <style>
+    :root {
+      --bg: #f6f1ea;
+      --ink: #4b2953;
+      --accent: #ff9b96;
+      --accent-strong: #f08b86;
+      --card: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      background: linear-gradient(rgba(246,241,234,0.7), rgba(246,241,234,0.7)), 
+                  url('background.png') center / cover no-repeat fixed;
+      color: var(--ink);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 60px 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+
+
+    .wrap { width: 100%; max-width: 1000px; }
+
+    .back-link {
+      display: inline-block;
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 800;
+      margin-bottom: 20px;
+      padding: 5px 15px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: white;
+    }
+
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .form-card {
+      background: var(--card);
+      border: 4px solid var(--ink);
+      box-shadow: 16px 16px 0px var(--ink);
+      border-radius: 32px;
+      padding: 50px;
+    }
+
+
+    .info-sidebar {
+      background: var(--ink);
+      color: white;
+      border-radius: 32px;
+      padding: 40px;
+      border: 4px solid var(--ink);
+      box-shadow: 8px 8px 0px var(--accent);
+    }
+
+    h1 { margin: 0 0 10px; font-size: clamp(32px, 5vw, 42px); font-weight: 900; line-height: 1; }
+    .subtitle { margin: 0 0 30px; opacity: 0.8; font-size: 18px; }
+
+    h3 { color: var(--accent); text-transform: uppercase; font-size: 14px; letter-spacing: 1px; margin-top: 0; }
+
+    label {
+      display: block;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 16px;
+      background: #fff;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      background: var(--accent);
+      color: white;
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      font-weight: 900;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 6px 6px 0px var(--ink);
+      transition: 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: translate(-3px, -3px);
+      box-shadow: 9px 9px 0px var(--ink);
+    }
+
+    .guidelines-list {
+      padding: 0;
+      list-style: none;
+      margin: 20px 0 0;
+    }
+
+    .guidelines-list li {
+      margin-bottom: 15px;
+      font-size: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    #message {
+      display: none;
+      padding: 30px;
+      background: var(--accent);
+      border: 4px solid var(--ink);
+      border-radius: 20px;
+      color: white;
+      font-weight: 900;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    @media (max-width: 850px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .form-card { padding: 30px; }
+      .info-sidebar { order: -1; } /* Info shows first on mobile */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <div class="content-grid">
+      <div class="form-card">
+        <div id="form-container">
+          <h1>Submit a Bite.</h1>
+          <p class="subtitle">Share your curiosity with the world.</p>
+
+          <form id="factForm" onsubmit="event.preventDefault(); showSuccess();">
+            <label for="name">Contributor Name</label>
+            <input type="text" id="name" placeholder="Your name" required>
+
+            <label for="category">Fact Flavor</label>
+            <select id="category">
+              <option value="tech">Tech & Math</option>
+              <option value="science">Science & Space</option>
+              <option value="body">Human Body</option>
+            </select>
+
+            <label for="fact">The Bite-Sized Fact</label>
+            <textarea id="fact" rows="5" placeholder="Did you know that..." required></textarea>
+
+            <button type="submit" class="submit-btn">SEND TO RESEARCHERS →</button>
+          </form>
+        </div>
+
+        <div id="message">
+          THANK YOU!<br>
+          <span style="font-size: 16px; font-weight: 500;">Shwe Hmone is checking your fact now.</span>
+        </div>
+      </div>
+
+      <div class="info-sidebar">
+        <h3>Submission Tips</h3>
+        <p style="font-size: 15px; opacity: 0.9;">To make sure your fact gets added to the site, follow these rules:</p>
+        
+        <ul class="guidelines-list">
+          <li><strong>Keep it Short:</strong> Try to keep facts under 20 words.</li>
+          <li><strong>Be Accurate:</strong> Double check with 2 sources.</li>
+          <li><strong>Stay Weird:</strong> We love things that sound impossible!</li>
+        </ul>
+
+        <hr style="border: 1px dashed rgba(255,255,255,0.2); margin: 30px 0;">
+
+        <h3>Our Process</h3>
+        <p style="font-size: 14px; opacity: 0.8;">Once you submit, <strong>Shwe Hmone</strong> verifies the info, <strong>Thant Thiri</strong> adds it to the code, and <strong>Khit Nandar</strong> designs a slide for it!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showSuccess() {
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('message').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
